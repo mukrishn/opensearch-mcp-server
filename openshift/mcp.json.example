@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "opensearch-mcp": {
+      "url": "https://perfscale-opensearch-mcp.apps.<cluster>/mcp",
+      "trust": true
+    },
+    "opensearch-mcp-override": {
+      "url": "https://perfscale-opensearch-mcp.apps.<cluster>/mcp",
+      "trust": true,
+      "headers": {
+        "opensearch-url": "https://search-other-….us-west-2.es.amazonaws.com",
+        "Authorization": "Basic <base64(user:password)>"
+      }
+    }
+  }
+}

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opensearch-mcp
+  namespace: opensearch-mcp
+  labels:
+    app.kubernetes.io/name: opensearch-mcp-server
+    app.kubernetes.io/part-of: opensearch-mcp
+    app.kubernetes.io/component: server
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: opensearch-mcp-server
+      app.kubernetes.io/component: server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: opensearch-mcp-server
+        app.kubernetes.io/part-of: opensearch-mcp
+        app.kubernetes.io/component: server
+    spec:
+      containers:
+        - name: opensearch-mcp
+          image: quay.io/mukrishn/opensearch-mcp-server:latest
+          imagePullPolicy: Always
+          args:
+            - --transport
+            - stream
+            - --host
+            - 0.0.0.0
+            - --port
+            - "9900"
+            - --mode
+            - single
+          ports:
+            - name: mcp
+              containerPort: 9900
+              protocol: TCP
+          env:
+            - name: OPENSEARCH_HEADER_AUTH
+              value: "true"
+            - name: OPENSEARCH_DYNAMIC_CONNECTION
+              value: "false"
+            - name: OPENSEARCH_SSL_VERIFY
+              value: "false"
+          envFrom:
+            - secretRef:
+                name: opensearch-mcp-creds
+                optional: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 128Mi
+            limits:
+              cpu: "1"
+              memory: 512Mi
+          readinessProbe:
+            tcpSocket:
+              port: mcp
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            tcpSocket:
+              port: mcp
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+      securityContext:
+        runAsNonRoot: true
+        seccompProfile:
+          type: RuntimeDefault

@@ -1,0 +1,23 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: perfscale
+  namespace: opensearch-mcp
+  labels:
+    app.kubernetes.io/name: opensearch-mcp-server
+    app.kubernetes.io/part-of: opensearch-mcp
+    app.kubernetes.io/component: server
+  annotations:
+    # MCP tool calls can be long-running
+    haproxy.router.openshift.io/timeout: 300s
+spec:
+  to:
+    kind: Service
+    name: opensearch-mcp
+    weight: 100
+  port:
+    targetPort: mcp
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+  wildcardPolicy: None
